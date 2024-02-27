@@ -42,6 +42,10 @@ class Payment(models.Model):
     price = models.PositiveIntegerField(verbose_name='Стоимость')
     payment_method = models.CharField(choices=PAYMENT_METHODS, verbose_name='Способ оплаты')
 
+
+    def __str__(self):
+        return f'{self.user.email} - {self.date} - {self.price}'
+
     class Meta:
         verbose_name = 'Платёж'
         verbose_name_plural = 'Платежи'
