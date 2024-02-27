@@ -1,6 +1,19 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from courses.models import NULLABLE, Course, Lesson
+from django.utils.translation import gettext_lazy as _
+
+
+class UserRoles(models.TextChoices):
+    """
+        Класс перечисления для определения ролей пользователя.
+
+        Attributes:
+            MEMBER (str): Значение роли 'member'.
+            MODERATOR (str): Значение роли 'moderator'.
+    """
+    MEMBER = 'member', _('member')
+    MODERATOR = 'moderator', _('moderator')
 
 
 class User(AbstractUser):
@@ -10,6 +23,7 @@ class User(AbstractUser):
     phone = models.CharField(max_length=35, verbose_name='номер телефона', **NULLABLE)
     city = models.CharField(max_length=100, verbose_name='город', **NULLABLE)
     avatar = models.ImageField(upload_to='users', verbose_name='аватар', **NULLABLE)
+    role = models.CharField(max_length=9, choices=UserRoles.choices, default=UserRoles.MEMBER)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -29,6 +43,5 @@ class Payment(models.Model):
     payment_method = models.CharField(choices=PAYMENT_METHODS, verbose_name='Способ оплаты')
 
     class Meta:
-
         verbose_name = 'Платёж'
         verbose_name_plural = 'Платежи'
