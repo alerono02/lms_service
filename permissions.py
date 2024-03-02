@@ -1,6 +1,8 @@
 from rest_framework.permissions import BasePermission
+from rest_framework.generics import GenericAPIView
+from rest_framework.request import Request
 
-from users.models import UserRoles
+from django.db import models
 
 
 class IsOwner(BasePermission):
@@ -22,17 +24,11 @@ class IsOwner(BasePermission):
 
 
 class IsModerator(BasePermission):
-    """
-        Права доступа для модератора.
-
-        Модератор может видеть и редактировать уроки и курсы, но не создавать и не удалять.
-
-        Attributes:
-            message (str): Сообщение об ошибке, которое будет возвращено при отсутствии доступа.
-    """
-    message = "Вы не являетесь модератором."
 
     def has_permission(self, request, view):
-        if request.user.role == UserRoles.MODERATOR:
+        if request.user.groups.pk == 1:
             return True
-        return False
+        else:
+            return False
+
+
