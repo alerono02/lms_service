@@ -26,8 +26,7 @@ class IsOwner(BasePermission):
 class IsModerator(BasePermission):
 
     def has_permission(self, request, view):
-        if request.user.groups.filter(name='Moderator'):
-            print(request.user.groups.filter(name='Moderator'))
+        if request.user.groups.filter(name='Moderator').exists():
             return True
         else:
             return False

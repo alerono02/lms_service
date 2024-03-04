@@ -22,7 +22,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         if self.action == 'retrieve':
             permission_classes = [IsAuthenticated, IsOwner | IsModerator ]
         elif self.action == 'create':
-            permission_classes = [IsAuthenticated]
+            permission_classes = [IsAuthenticated, ~IsModerator]
         elif self.action == 'destroy':
             permission_classes = [IsOwner, IsAuthenticated]
         elif self.action == 'update':
@@ -35,7 +35,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 class LessonCreateAPIView(generics.CreateAPIView):
 
     serializer_class = LessonSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ~IsModerator]
 
     def perform_create(self, serializer):
         new_lesson = serializer.save()
@@ -48,7 +48,7 @@ class LessonListAPIView(generics.ListAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
     pagination_class = LessonPaginator
-    permission_classes = [IsAuthenticated | IsModerator]
+    permission_classes = [IsAuthenticated]
 
 
 class LessonRetrieveAPIView(generics.RetrieveAPIView):
@@ -73,7 +73,7 @@ class LessonDestroyAPIView(generics.DestroyAPIView):
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
-    
+
     serializer_class = PaymentSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = PaymentFilter
