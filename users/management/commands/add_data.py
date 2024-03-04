@@ -65,6 +65,7 @@ class Command(BaseCommand):
             course = Course.objects.create(
                 title=fake.word(),
                 description=fake.text(),
+                owner=random.choice(users),
             )
             courses.append(course)
 
@@ -73,6 +74,7 @@ class Command(BaseCommand):
                     title=fake.sentence(),
                     description=fake.text(),
                     course=course,
+                    owner=course.owner,
                 )
                 lessons.append(lesson)
 
