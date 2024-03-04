@@ -1,8 +1,4 @@
 from rest_framework.permissions import BasePermission
-from rest_framework.generics import GenericAPIView
-from rest_framework.request import Request
-
-from django.db import models
 
 
 class IsOwner(BasePermission):

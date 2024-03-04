@@ -1,9 +1,11 @@
 asgiref==3.7.2
+coverage==7.4.3
 Django==4.2.7
 django-filter==23.5
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.1
 Faker==23.2.1
+iniconfig==2.0.0
 pillow==10.2.0
 psycopg2==2.9.9
 PyJWT==2.8.0

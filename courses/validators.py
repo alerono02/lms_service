@@ -9,5 +9,6 @@ class LessonValidator:
 
     def __call__(self, value):
         url = dict(value).get(self.field)
-        if not url.startswith('https://www.youtube.com/'):
-            raise ValidationError("Not youtube link")
+        if url is not None:
+            if not url.startswith('https://www.youtube.com/'):
+                raise ValidationError("Not youtube link")
