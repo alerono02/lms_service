@@ -41,8 +41,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_yasg',
 
     'courses',
     'users',
@@ -144,3 +146,5 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated'
     ]
 }
+
+STRIPE_API_KEY = os.getenv('STRIPE_API_KEY')

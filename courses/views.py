@@ -12,6 +12,9 @@ from users.permissions import IsOwner, IsModerator
 
 
 class CourseViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet для взаимодействия с моделью курса.
+    """
 
     serializer_class = CourseSerializer
     pagination_class = CoursePaginator
@@ -20,7 +23,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         """Права доступа"""
         if self.action == 'retrieve':
-            permission_classes = [IsAuthenticated, IsOwner | IsModerator ]
+            permission_classes = [IsAuthenticated, IsOwner | IsModerator]
         elif self.action == 'create':
             permission_classes = [IsAuthenticated, ~IsModerator]
         elif self.action == 'destroy':
@@ -33,6 +36,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 
 class LessonCreateAPIView(generics.CreateAPIView):
+    """Create a Lesson"""
 
     serializer_class = LessonSerializer
     permission_classes = [IsAuthenticated, ~IsModerator]
@@ -44,6 +48,7 @@ class LessonCreateAPIView(generics.CreateAPIView):
 
 
 class LessonListAPIView(generics.ListAPIView):
+    """List of lessons"""
 
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
@@ -52,6 +57,7 @@ class LessonListAPIView(generics.ListAPIView):
 
 
 class LessonRetrieveAPIView(generics.RetrieveAPIView):
+    """Lesson view"""
 
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
@@ -59,6 +65,7 @@ class LessonRetrieveAPIView(generics.RetrieveAPIView):
 
 
 class LessonUpdateAPIView(generics.UpdateAPIView):
+    """Lesson update"""
 
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
@@ -66,6 +73,7 @@ class LessonUpdateAPIView(generics.UpdateAPIView):
 
 
 class LessonDestroyAPIView(generics.DestroyAPIView):
+    """Lesson destroy"""
 
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
@@ -73,17 +81,14 @@ class LessonDestroyAPIView(generics.DestroyAPIView):
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
+    """ViewSet for payment"""
+    queryset = Payment.objects.all()
 
     serializer_class = PaymentSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = PaymentFilter
+    ordering_fields = ['payment_date']
     permission_classes = [IsAuthenticated]
-
-    def get_queryset(self, *args, **kwargs):
-        if self.request.user.has_perm(IsAdminUser):
-            return Payment.objects.all()
-        else:
-            return Payment.objects.filter(user=self.request.user)
 
 
 class SubscribeCourseView(generics.CreateAPIView):

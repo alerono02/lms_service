@@ -4,12 +4,13 @@ from courses.apps import CoursesConfig
 from rest_framework.routers import DefaultRouter
 
 from courses.views import CourseViewSet, LessonCreateAPIView, LessonListAPIView, LessonRetrieveAPIView, \
-    LessonUpdateAPIView, LessonDestroyAPIView, SubscribeCourseView, UnsubscribeCourseView
+    LessonUpdateAPIView, LessonDestroyAPIView, SubscribeCourseView, UnsubscribeCourseView, PaymentViewSet
 
 app_name = CoursesConfig.name
 
 router = DefaultRouter()
 router.register(r'courses', CourseViewSet, basename='courses')
+router.register('payments', PaymentViewSet, basename='payments')
 
 urlpatterns = [
     path('lesson/create', LessonCreateAPIView.as_view(), name='lesson-create'),
