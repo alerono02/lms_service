@@ -1,7 +1,10 @@
+from django.http import HttpResponseRedirect, Http404
+from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, generics, status
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework import viewsets, generics
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from courses.filters import PaymentFilter
 from courses.models import Course, Lesson, Subscription
@@ -9,6 +12,7 @@ from courses.paginators import CoursePaginator, LessonPaginator
 from courses.serializers import CourseSerializer, LessonSerializer, PaymentSerializer, SubscriptionSerializer
 from users.models import Payment
 from users.permissions import IsOwner, IsModerator
+from users.serializers import UserSerializer
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -19,6 +23,11 @@ class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
     pagination_class = CoursePaginator
     queryset = Course.objects.all()
+
+    def perform_create(self, serializer):
+        new_course = serializer.save()
+        new_course.owner = self.request.user
+        new_course.save()
 
     def get_permissions(self):
         """Права доступа"""
@@ -91,47 +100,51 @@ class PaymentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
-class SubscribeCourseView(generics.CreateAPIView):
-    """
-    Создает подписку пользователя на указанный курс.
-
-    Объект ответа с информацией о результате операции.
-            HTTP_201_CREATED: Подписка успешно создана.
-            HTTP_400_BAD_REQUEST: Подписка уже существует.
-    """
-    queryset = Subscription.objects.all()
+class SubscriptionView(APIView):
+    queryset = Course.objects.all()
     serializer_class = SubscriptionSerializer
     permission_classes = [IsAuthenticated]
 
-    def create(self, request, *args, **kwargs):
-        course_id = kwargs.get('course_id')
-        course = Course.objects.get(pk=course_id)
+    def get_object(self, *args, **kwargs):
+        if self.request.user.is_authenticated():
+            try:
+                course = Course.objects.get(owner=self.request.user)
+            except:
+                course = None
 
-        # Проверка, подписан ли пользователь уже на этот курс
-        if Subscription.objects.filter(user=request.user, course=course).exists():
-            return Response({'detail': 'Вы уже подписаны на этот курс.'}, status=status.HTTP_400_BAD_REQUEST)
+            if course is None:
+                HttpResponseRedirect(reverse("course"))
 
-        serializer = self.get_serializer(data={'user': request.user.id, 'course': course.id})
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        else:
+            course_id = self.request.session.get("course_id")
+            if course_id is None:
+                HttpResponseRedirect(reverse("course"))
 
-        return Response({'detail': 'Вы успешно подписались на курс.'}, status=status.HTTP_201_CREATED)
+            course = Course.objects.get(id=course_id)
 
+        return course
 
-class UnsubscribeCourseView(generics.DestroyAPIView):
-    """
-    Удаляет подписку пользователя на указанный курс.
-    """
-    queryset = Subscription.objects.all()
-    serializer_class = SubscriptionSerializer
-    permission_classes = [IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        user = self.request.user
+        user_data = UserSerializer(user).data
 
-    def get_object(self):
-        course_id = self.kwargs.get('course_id')
-        course = Course.objects.get(pk=course_id)
-        return Subscription.objects.get(user=self.request.user, course=course)
+        course_id = request.data.get('course_id')
 
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response({'detail': 'Вы успешно отписались от курса.'}, status=status.HTTP_200_OK)
+        if course_id is None:
+            return Response({"message": "Отсутствует идентификатор курса в запросе"}, status=400)
+
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            raise Http404("Курс с таким идентификатором не найден")
+
+        subs_item = Subscription.objects.filter(user=user, course=course)
+
+        if subs_item.exists():
+            subs_item.delete()
+            message = 'Подписка на курс удалена'
+        else:
+            Subscription.objects.create(user=user, course=course)
+            message = 'Подписка на курс добавлена'
+
+        return Response({"message": message, "user": user_data})
