@@ -1,18 +1,33 @@
-import requests
+import stripe
+
 from config.settings import STRIPE_API_KEY
 
-
-def create_payment(payment_amount, currency='usd'):
-    '''создание платежа'''
-    headers = {'Authorization': f'Bearer {STRIPE_API_KEY}'}
-    params = {'payment_amount': payment_amount, 'currency': currency}
-    response = requests.post('https://api.stripe.com/v1/payment_intents', headers=headers, params=params)
-    data = response.json()
-    return data['id']
+API_KEY = STRIPE_API_KEY
 
 
-def retrieve_payment(id):
-    '''получение платежа'''
-    headers = {'Authorization': f'Bearer {STRIPE_API_KEY}'}
-    response = requests.get(f'https://api.stripe.com/v1/payment_intents/{id}', headers=headers)
-    return response.json()
+def get_session(payment):
+    """ Функция возвращает сессию для оплаты """
+    stripe.api_key = API_KEY
+
+    product = stripe.Product.create(
+        name=f'{payment.lesson if payment.lesson else payment.course}'
+    )
+
+    price = stripe.Price.create(
+        currency='eur',
+        unit_amount=int(payment.price)*100,
+        product=f'{product.id}',
+    )
+
+    session = stripe.checkout.Session.create(
+        success_url="http://127.0.0.1:8000/",
+        line_items=[
+            {
+                'price': f'{price.id}',
+                'quantity': 1,
+            }
+        ],
+        mode='payment',
+
+    )
+    return session.url

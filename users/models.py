@@ -35,12 +35,12 @@ class Payment(models.Model):
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', **NULLABLE)
-    date = models.DateField(verbose_name='Дата оплаты')
+    date = models.DateField(auto_now_add=True,verbose_name='Дата оплаты')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='Курс', **NULLABLE)
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='Урок', **NULLABLE)
     price = models.PositiveIntegerField(verbose_name='Стоимость')
     payment_method = models.CharField(choices=PAYMENT_METHODS, verbose_name='Способ оплаты')
-    stripe_id = models.CharField(max_length=255, verbose_name='id платежа на stripe', **NULLABLE)
+    stripe_link = models.URLField(max_length=400, verbose_name='ссылка для платежа', **NULLABLE)
 
     def __str__(self):
         return f'{self.user.email} - {self.date} - {self.price}'

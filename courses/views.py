@@ -13,6 +13,7 @@ from courses.serializers import CourseSerializer, LessonSerializer, PaymentSeria
 from users.models import Payment
 from users.permissions import IsOwner, IsModerator
 from users.serializers import UserSerializer
+from users.services import get_session
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -98,6 +99,12 @@ class PaymentViewSet(viewsets.ModelViewSet):
     filterset_class = PaymentFilter
     ordering_fields = ['payment_date']
     permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        paid_of_course = serializer.save()
+        payment_link = get_session(paid_of_course)
+        paid_of_course.stripe_link = payment_link
+        paid_of_course.save()
 
 
 class SubscriptionView(APIView):
