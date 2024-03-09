@@ -102,8 +102,9 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         paid_of_course = serializer.save()
-        payment_link = get_session(paid_of_course)
-        paid_of_course.stripe_link = payment_link
+        stripe_obj = get_session(paid_of_course)
+        paid_of_course.stripe_link = stripe_obj.url
+        paid_of_course.stripe_id = stripe_obj.id
         paid_of_course.save()
 
 
