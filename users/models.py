@@ -41,6 +41,7 @@ class Payment(models.Model):
     price = models.PositiveIntegerField(verbose_name='Стоимость')
     payment_method = models.CharField(choices=PAYMENT_METHODS, verbose_name='Способ оплаты')
     stripe_link = models.URLField(max_length=400, verbose_name='ссылка для платежа', **NULLABLE)
+    stripe_id = models.CharField(max_length=255, verbose_name='id платежа', **NULLABLE)
 
     def __str__(self):
         return f'{self.user.email} - {self.date} - {self.price}'

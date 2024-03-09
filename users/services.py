@@ -30,4 +30,5 @@ def get_session(payment):
         mode='payment',
 
     )
-    return session.url
+    # print(product)
+    return session
