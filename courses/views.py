@@ -10,6 +10,7 @@ from courses.filters import PaymentFilter
 from courses.models import Course, Lesson, Subscription
 from courses.paginators import CoursePaginator, LessonPaginator
 from courses.serializers import CourseSerializer, LessonSerializer, PaymentSerializer, SubscriptionSerializer
+from courses.tasks import send_update_course
 from users.models import Payment
 from users.permissions import IsOwner, IsModerator
 from users.serializers import UserSerializer
@@ -29,6 +30,8 @@ class CourseViewSet(viewsets.ModelViewSet):
         new_course = serializer.save()
         new_course.owner = self.request.user
         new_course.save()
+        if new_course:
+            send_update_course.delay(new_course.course.id)
 
     def get_permissions(self):
         """Права доступа"""
@@ -55,6 +58,8 @@ class LessonCreateAPIView(generics.CreateAPIView):
         new_lesson = serializer.save()
         new_lesson.owner = self.request.user
         new_lesson.save()
+        if new_lesson:
+            send_update_course.delay(new_lesson.course.id)
 
 
 class LessonListAPIView(generics.ListAPIView):
@@ -80,6 +85,13 @@ class LessonUpdateAPIView(generics.UpdateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
     permission_classes = [IsAuthenticated, IsOwner | IsModerator]
+
+    def perform_update(self, serializer):
+        new_lesson = serializer.save(owner=self.request.user)
+        new_lesson.owner = self.request.user
+        new_lesson.save()
+        if new_lesson:
+            send_update_course.delay(new_lesson.course.id)
 
 
 class LessonDestroyAPIView(generics.DestroyAPIView):
