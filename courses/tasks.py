@@ -18,26 +18,26 @@ def send_update_course(course_id):
         send_mail(subject=f"{course.title}",
                   message=f"Обновление {course.title}",
                   from_email=settings.EMAIL_HOST_USER,
-                  recipient_list=[f'{sub.user}'],
+                  recipient_list=[f'{sub.user.email}'],
                   fail_silently=True
                   )
 
 
 
-# Создаем интервал для повтора
-schedule, created = IntervalSchedule.objects.get_or_create(
-    every=10,
-    period=IntervalSchedule.SECONDS,
-)
-
-# Создаем задачу для повторения
-PeriodicTask.objects.create(
-    interval=schedule,
-    name='Importing contacts',
-    task='proj.tasks.import_contacts',
-    args=json.dumps(['arg1', 'arg2']),
-    kwargs=json.dumps({
-        'be_careful': True,
-    }),
-    expires=datetime.utcnow() + timedelta(seconds=30)
-)
+# # Создаем интервал для повтора
+# schedule, created = IntervalSchedule.objects.get_or_create(
+#     every=10,
+#     period=IntervalSchedule.SECONDS,
+# )
+#
+# # Создаем задачу для повторения
+# PeriodicTask.objects.create(
+#     interval=schedule,
+#     name='Importing contacts',
+#     task='proj.tasks.import_contacts',
+#     args=json.dumps(['arg1', 'arg2']),
+#     kwargs=json.dumps({
+#         'be_careful': True,
+#     }),
+#     expires=datetime.utcnow() + timedelta(seconds=30)
+# )
