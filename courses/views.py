@@ -33,6 +33,10 @@ class CourseViewSet(viewsets.ModelViewSet):
         if new_course:
             send_update_course.delay(new_course.course.id)
 
+    def perform_update(self, serializer):
+        updated_course = serializer.save()
+        send_update_course.delay(updated_course.course.id)
+
     def get_permissions(self):
         """Права доступа"""
         if self.action == 'retrieve':
