@@ -1,0 +1,89 @@
+version: "3"
+
+services:
+  db:
+    image: postgres
+    restart: always
+    env_file:
+      - .env
+    expose:
+      - '5432'
+    volumes:
+      - pg_data:/var/lib/postgresql/data/
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    tty: true
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - '8001:8000'
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      #db: (к тесту проверки здоровья БД)
+      #condition: service_healthy
+
+  # REDIS
+  redis:
+    image: redis
+    ports:
+      - '6379:6379'
+
+  # CELERY
+  celery:
+    build: .
+    tty: true
+    command: celery -A config worker -l INFO
+    depends_on:
+      - redis
+      - db
+      - app
+
+  # CELERY-BEAT
+  celery_beat:
+    build: .
+    restart: always
+    tty: true
+    command: celery -A config beat -l INFO -S django
+    depends_on:
+      - redis
+      - db
+      - app
+
+
+volumes:
+  pg_data:
+
+
+#version: '3'
+#
+#services:
+#  # database POSTGRES
+#  db:
+#    image: postgres
+#
+#    environment:
+#      POSTGRES_PASSWORD: mysecretpassword
+#      PGDATA: /var/lib/postgresql/data/pgdata
+#
+#    volumes:
+#      - pg_data:/var/lib/postgresql/data/pgdata
+#    ports:
+#      - '5432:5432'
+
+# тест проверки здоровья БД
+    #healthcheck:
+      #test: [ "CMD-SHELL", "pg_isready" ]
+      #interval: 10s
+      #timeout: 5s
+      #retries: 5
+
+  # OUR APP
+
+
